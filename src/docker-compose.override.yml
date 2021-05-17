@@ -1,0 +1,27 @@
+version: '3.4'
+
+services:
+
+  sqldata:
+    environment:
+      - SA_PASSWORD=Pass@word
+      - ACCEPT_EULA=Y
+    ports:
+      - "1433:1433"
+    volumes:
+      - backend-sqldata:/var/opt/mssql
+
+  backend.api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - ConnectionString=${BACKEND_AZURE_BACKEND_DB:-Server=sqldata;Database=EscapeRoom2021.Services.Backend;User Id=sa;Password=Pass@word}
+    ports:
+      - "8080:80"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+volumes:
+  backend-sqldata:
+    external: false
