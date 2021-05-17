@@ -4,13 +4,13 @@ namespace Backend.API.Infrastructure.Models
 {
     public class Token : IEntity
     {
-        public Guid Id { get; set; }
-
-        public int LeaderId { get; set; }
+        public int Id { get; set; }
 
         public string Key { get; set; }
 
         public Contact Contact { get; set; }
+
+        public int ContactId { get; set; }
 
         public DateTime UsedAt { get; set; }
 

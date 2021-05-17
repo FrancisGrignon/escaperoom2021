@@ -19,11 +19,19 @@ namespace Backend.API.Migrations
                 .HasAnnotation("ProductVersion", "5.0.6")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.HasSequence("contact_hilo")
+                .IncrementsBy(10);
+
+            modelBuilder.HasSequence("token_hilo")
+                .IncrementsBy(10);
+
             modelBuilder.Entity("Backend.API.Infrastructure.Models.Contact", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:HiLoSequenceName", "contact_hilo")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
 
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
@@ -32,30 +40,36 @@ namespace Backend.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Contact");
                 });
 
             modelBuilder.Entity("Backend.API.Infrastructure.Models.Token", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:HiLoSequenceName", "token_hilo")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.SequenceHiLo);
 
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
-                    b.Property<Guid?>("ContactId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<int>("ContactId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -64,10 +78,9 @@ namespace Backend.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Key")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("LeaderId")
-                        .HasColumnType("int");
+                        .IsRequired()
+                        .HasMaxLength(22)
+                        .HasColumnType("nvarchar(22)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -79,14 +92,16 @@ namespace Backend.API.Migrations
 
                     b.HasIndex("ContactId");
 
-                    b.ToTable("Tokens");
+                    b.ToTable("Token");
                 });
 
             modelBuilder.Entity("Backend.API.Infrastructure.Models.Token", b =>
                 {
                     b.HasOne("Backend.API.Infrastructure.Models.Contact", "Contact")
                         .WithMany("Tokens")
-                        .HasForeignKey("ContactId");
+                        .HasForeignKey("ContactId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("Contact");
                 });

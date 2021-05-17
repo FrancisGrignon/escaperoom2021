@@ -17,12 +17,12 @@ namespace Backend.API.Infrastructure.Repositories
             Context = context;
         }
 
-        public virtual TEntity Get(Guid id)
+        public virtual TEntity Get(int id)
         {
             return Context.Set<TEntity>().Where(p => p.Active && id == p.Id).SingleOrDefault();
         }
 
-        public virtual Task<TEntity> GetAsync(Guid id)
+        public virtual Task<TEntity> GetAsync(int id)
         {
             return Context.Set<TEntity>().Where(p => p.Active && id == p.Id).SingleOrDefaultAsync();
         }
@@ -136,12 +136,12 @@ namespace Backend.API.Infrastructure.Repositories
             return Context.SaveChangesAsync();
         }
 
-        public bool Exists(Guid id)
+        public bool Exists(int id)
         {
             return Context.Set<TEntity>().Where(p => p.Active && id == p.Id).Any();
         }
 
-        public Task<bool> ExistsAsync(Guid id)
+        public Task<bool> ExistsAsync(int id)
         {
             return Context.Set<TEntity>().Where(p => p.Active && id == p.Id).AnyAsync();
         }

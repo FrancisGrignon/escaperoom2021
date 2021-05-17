@@ -1,4 +1,5 @@
-﻿using Backend.API.Infrastructure.Models;
+﻿using Backend.API.Infrastructure.EntityConfiguration;
+using Backend.API.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -14,6 +15,12 @@ namespace Backend.API.Infrastructure
         public DbSet<Contact> Contacts { get; set; }
 
         public DbSet<Token> Tokens { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            builder.ApplyConfiguration(new ContactEntityTypeConfiguration());
+            builder.ApplyConfiguration(new TokenTypeConfiguration());
+        }
     }
 
     public class BackendContextDesignFactory : IDesignTimeDbContextFactory<BackendContext>

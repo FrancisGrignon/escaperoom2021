@@ -8,9 +8,9 @@ namespace Backend.API.Infrastructure.Repositories
 {
     public interface IRepository<TEntity> where TEntity : class
     {
-        TEntity Get(Guid id);
+        TEntity Get(int id);
 
-        Task<TEntity> GetAsync(Guid id);
+        Task<TEntity> GetAsync(int id);
 
         IEnumerable<TEntity> GetAll();
 
@@ -40,8 +40,8 @@ namespace Backend.API.Infrastructure.Repositories
 
         Task<int> CompleteAsync();
 
-        bool Exists(Guid id);
+        bool Exists(int id);
 
-        Task<bool> ExistsAsync(Guid id);
+        Task<bool> ExistsAsync(int id);
     }
 }

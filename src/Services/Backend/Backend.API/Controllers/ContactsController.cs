@@ -29,7 +29,7 @@ namespace Backend.API.Controllers
 
         // GET: api/Contacts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Contact>> GetContact(Guid id)
+        public async Task<ActionResult<Contact>> GetContact(int id)
         {
             var contact = await _contactRepository.GetAsync(id);
 
@@ -44,7 +44,7 @@ namespace Backend.API.Controllers
         // PUT: api/Contacts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutContact(Guid id, Contact contact)
+        public async Task<IActionResult> PutContact(int id, Contact contact)
         {
             if (id != contact.Id)
             {
@@ -86,7 +86,7 @@ namespace Backend.API.Controllers
 
         // DELETE: api/Contacts/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteContact(Guid id)
+        public async Task<IActionResult> DeleteContact(int id)
         {
             var contact = await _contactRepository.GetAsync(id);
 
@@ -102,7 +102,7 @@ namespace Backend.API.Controllers
             return NoContent();
         }
 
-        private bool ContactExists(Guid id)
+        private bool ContactExists(int id)
         {
             return _contactRepository.Exists(id);
         }

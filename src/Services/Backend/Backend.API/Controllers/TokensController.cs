@@ -31,7 +31,7 @@ namespace Backend.API.Controllers
 
         // GET: api/Tokens/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Token>> GetToken(Guid id)
+        public async Task<ActionResult<Token>> GetToken(int id)
         {
             var token = await _tokenRepository.GetAsync(id);
 
@@ -46,7 +46,7 @@ namespace Backend.API.Controllers
         // PUT: api/Tokens/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutToken(Guid id, Token token)
+        public async Task<IActionResult> PutToken(int id, Token token)
         {
             if (id != token.Id)
             {
@@ -88,7 +88,7 @@ namespace Backend.API.Controllers
 
         // DELETE: api/Tokens/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteToken(Guid id)
+        public async Task<IActionResult> DeleteToken(int id)
         {
             var token = await _tokenRepository.GetAsync(id);
             if (token == null)
@@ -103,7 +103,7 @@ namespace Backend.API.Controllers
             return NoContent();
         }
 
-        private bool TokenExists(Guid id)
+        private bool TokenExists(int id)
         {
             return _tokenRepository.Exists(id);
         }
