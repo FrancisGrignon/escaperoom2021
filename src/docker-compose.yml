@@ -5,10 +5,18 @@ services:
   sqldata:
     image: mcr.microsoft.com/mssql/server:2019-latest 
 
-  backend.api:
+  backend-api:
     image: ${DOCKER_REGISTRY-}backendapi
     build:
       context: .
       dockerfile: Services/Backend/Backend.API/Dockerfile
     depends_on:
       - sqldata
+
+  webadmin:
+    image: ${DOCKER_REGISTRY-}webadmin
+    build:
+      context: .
+      dockerfile: Web/WebAdmin/Dockerfile
+    depends_on:
+      - backend-api
