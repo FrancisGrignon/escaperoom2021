@@ -105,6 +105,7 @@ namespace Backend.API
             services.AddTransient<IContactRepository, ContactRepository>();
             services.AddTransient<ITokenRepository, TokenRepository>();
             services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IContactService, ContactService>();
 
             return services;
         }

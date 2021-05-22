@@ -1,5 +1,8 @@
 ﻿using Backend.API.Infrastructure.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Backend.API.Infrastructure.Repositories
 {
@@ -8,6 +11,16 @@ namespace Backend.API.Infrastructure.Repositories
         public ContactRepository(BackendContext context) : base(context)
         {
             // Empty
+        }
+
+        public Contact GetByEmail(string email)
+        {
+            return Context.Contacts.Where(p => p.Active && email == p.Email).SingleOrDefault();
+        }
+
+        public Task<Contact> GetByEmailAsync(string email)
+        {
+            return Context.Contacts.Where(p => p.Active && email == p.Email).SingleOrDefaultAsync();
         }
 
         public override void Remove(Contact leader)
