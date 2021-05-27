@@ -4,15 +4,22 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.IO;
 using System.Threading.Tasks;
+using WebAdmin.Clients;
 using WebAdmin.Models;
 
 namespace WebAdmin.Controllers
 {
     public class FileController : Controller
     {
+        private readonly IBackendClient _backendClient;
+
+        public FileController(IBackendClient backendClient)
+        {
+            _backendClient = backendClient;
+        }
+
         [HttpGet]
         public IActionResult Index()
         {
@@ -39,11 +46,13 @@ namespace WebAdmin.Controllers
             {
                 await file.CopyToAsync(stream);
 
-                var dtos = ReadExcelSheet(stream, true);
+                var contacts = ReadExcelSheet(stream, true);
 
-                foreach (var dto in dtos)
+                foreach (var contact in contacts)
                 {
-                    Console.WriteLine($"{dto.Name}, {dto.Email}");
+                    Console.WriteLine($"{contact.Name}, {contact.Email}");
+
+                    await _backendClient.CreateAsync(contact);
                 }
             }
 
@@ -52,7 +61,7 @@ namespace WebAdmin.Controllers
             return View(); // RedirectToAction("Index");
         }
 
-        private IEnumerable<ContactDto> ReadExcelSheet(Stream stream, bool firstRowIsHeader)
+        private IEnumerable<Contact> ReadExcelSheet(Stream stream, bool firstRowIsHeader)
         {
             using (SpreadsheetDocument doc = SpreadsheetDocument.Open(stream, false))
             {
@@ -62,7 +71,7 @@ namespace WebAdmin.Controllers
                 IEnumerable<Row> rows = worksheet.GetFirstChild<SheetData>().Descendants<Row>();
 
                 int counter = 0, index = 0;
-                ContactDto dto;
+                Contact dto;
 
                 foreach (Row row in rows)
                 {
@@ -75,7 +84,7 @@ namespace WebAdmin.Controllers
                     }
                     else
                     {
-                        dto = new ContactDto();
+                        dto = new Contact();
 
                         index = 0;
 

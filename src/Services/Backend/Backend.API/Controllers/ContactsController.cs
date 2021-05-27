@@ -1,11 +1,12 @@
-﻿using Backend.API.Infrastructure;
-using Backend.API.Infrastructure.Models;
+﻿using Backend.API.Infrastructure.Models;
 using Backend.API.Infrastructure.Repositories;
+using Backend.API.Infrastructure.Services;
+using Backend.API.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace Backend.API.Controllers
 {
@@ -14,22 +15,26 @@ namespace Backend.API.Controllers
     public class ContactsController : ControllerBase
     {
         private readonly IContactRepository _contactRepository;
+        private readonly ITokenService _tokenService;
 
-        public ContactsController(IContactRepository contactRepository)
+        public ContactsController(IContactRepository contactRepository, ITokenService tokenService)
         {
             _contactRepository = contactRepository;
+            _tokenService = tokenService;
         }
 
         // GET: api/Contacts
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Contact>>> GetContacts()
+        public async Task<ActionResult<IEnumerable<ContactViewModel>>> GetContacts()
         {
-            return await _contactRepository.GetAllAsync();
+            var contacts = await _contactRepository.GetAllAsync();
+
+            return Ok(contacts.Select(p => new ContactViewModel { Email = p.Email, Id = p.Id, Name = p.Name }));
         }
 
         // GET: api/Contacts/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Contact>> GetContact(int id)
+        public async Task<ActionResult<ContactViewModel>> GetContact(int id)
         {
             var contact = await _contactRepository.GetAsync(id);
 
@@ -38,18 +43,35 @@ namespace Backend.API.Controllers
                 return NotFound();
             }
 
-            return contact;
+            var model = new ContactViewModel
+            {
+                Id = contact.Id,
+                Name = contact.Name,
+                Email = contact.Email
+            };
+
+            return model;
         }
 
         // PUT: api/Contacts/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutContact(int id, Contact contact)
+        public async Task<IActionResult> PutContact(int id, ContactViewModel model)
         {
-            if (id != contact.Id)
+            if (id != model.Id)
             {
                 return BadRequest();
             }
+
+            var contact = await _contactRepository.GetAsync(model.Id);
+
+            if (contact == null)
+            {
+                return NotFound();
+            }
+
+            contact.Name = model.Name;
+            contact.Email = model.Email;
 
             _contactRepository.Update(contact);
 
@@ -75,13 +97,25 @@ namespace Backend.API.Controllers
         // POST: api/Contacts
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Contact>> PostContact(Contact contact)
+        public async Task<ActionResult<ContactViewModel>> PostContact(ContactViewModel model)
         {
+            var contact = new Contact
+            {
+                Name = model.Name,
+                Email = model.Email
+            };
+
+            var token = _tokenService.Generate();
+
+            contact.Tokens.Add(token);
+
             _contactRepository.Add(contact);
 
             await _contactRepository.CompleteAsync();
 
-            return CreatedAtAction("GetContact", new { id = contact.Id }, contact);
+            model.Id = contact.Id;
+
+            return CreatedAtAction("GetContact", new { id = contact.Id }, model);
         }
 
         // DELETE: api/Contacts/5

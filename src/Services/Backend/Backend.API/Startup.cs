@@ -1,6 +1,7 @@
 using Backend.API.Infrastructure;
 using Backend.API.Infrastructure.Repositories;
 using Backend.API.Infrastructure.Services;
+using Backend.API.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -54,6 +55,8 @@ namespace Backend.API
 
             app.UseAuthorization();
 
+            app.AddApiKeyValidation();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
@@ -106,8 +109,16 @@ namespace Backend.API
             services.AddTransient<ITokenRepository, TokenRepository>();
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IContactService, ContactService>();
+            services.AddSingleton<IApiKeyService, ApiKeyService>();
 
             return services;
+        }
+
+        public static IApplicationBuilder AddApiKeyValidation(this IApplicationBuilder app)
+        {
+            app.UseMiddleware<ApiKeyValidatorsMiddleware>();
+
+            return app;
         }
     }
 }

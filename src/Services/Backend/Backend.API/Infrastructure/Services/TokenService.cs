@@ -2,17 +2,14 @@
 using Backend.API.Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Threading.Tasks;
 
 namespace Backend.API.Infrastructure.Services
 {
     public class TokenService : ITokenService
     {
-        public const int TOKEN_VALID = 0;
-        public const int TOKEN_NOTFOUND = 1;
-        public const int TOKEN_EXPIRED = 2;
-
         private readonly ILogger<TokenService> _logger;
-        private ITokenRepository _tokenRepository;
+        private readonly ITokenRepository _tokenRepository;
 
         public TokenService(ITokenRepository tokenRepository, ILogger<TokenService> logger)
         {
@@ -20,38 +17,45 @@ namespace Backend.API.Infrastructure.Services
             _tokenRepository = tokenRepository;
         }
 
-        public Token Generate(Contact contact)
+        public Token Generate()
         {
             _logger.LogDebug("TokenService is generating a token.");
 
             var token = new Token()
             {
                 Key = Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Replace("=", ""),
-                Contact = contact
             };
-
-            contact.Tokens.Add(token);
-
-            // Save token
-            _tokenRepository.Add(token);
-            _tokenRepository.Complete();
 
             _logger.LogDebug("TokenService has generated a token.");
 
             return token;
         }
 
-        public int Use(string key)
+        public Token Generate(Contact contact)
+        {
+            var token = Generate();
+
+            token.Contact = contact;
+            contact.Tokens.Add(token);
+
+            // Save token
+            _tokenRepository.Add(token);
+            _tokenRepository.Complete();
+
+            return token;
+        }
+
+        public async Task<int> UseAsync(string key)
         {
             int result;
 
             // Find the token
-            var token = _tokenRepository.GetByKey(key);
+            var token = await _tokenRepository.GetByKeyAsync(key);
 
             if (null == token)
             {
                 // Token not found
-                result = TOKEN_NOTFOUND;
+                result = ITokenService.TOKEN_NOTFOUND;
 
                 _logger.LogDebug($"TokenService {key} was not found.");
             }
@@ -64,7 +68,7 @@ namespace Backend.API.Infrastructure.Services
                 _tokenRepository.Update(token);
                 _tokenRepository.Complete();
 
-                result = TOKEN_VALID;
+                result = ITokenService.TOKEN_VALID;
 
                 _logger.LogDebug($"TokenService {key} is in used.");
             }
@@ -76,13 +80,13 @@ namespace Backend.API.Infrastructure.Services
                 _tokenRepository.Update(token);
                 _tokenRepository.Complete();
 
-                result = TOKEN_VALID;
+                result = ITokenService.TOKEN_VALID;
 
                 _logger.LogDebug($"TokenService {key} was reused.");
             }
             else
             {
-                result = TOKEN_EXPIRED;
+                result = ITokenService.TOKEN_EXPIRED;
 
                 _logger.LogDebug($"TokenService {key} has expired at {token.ExpiredAt}.");
             }

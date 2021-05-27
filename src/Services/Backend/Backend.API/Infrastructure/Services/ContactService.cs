@@ -1,10 +1,6 @@
 ﻿using Backend.API.Infrastructure.Models;
 using Backend.API.Infrastructure.Repositories;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Backend.API.Infrastructure.Services
 {
@@ -12,29 +8,45 @@ namespace Backend.API.Infrastructure.Services
     {
         private readonly ILogger<ContactService> _logger;
         private IContactRepository _contactRepository;
+        private ITokenService _tokenService;
 
-        public ContactService(IContactRepository contactRepository, ILogger<ContactService> logger)
+        public ContactService(IContactRepository contactRepository, ITokenService tokenService, ILogger<ContactService> logger)
         {
             _logger = logger;
             _contactRepository = contactRepository;
+            _tokenService = tokenService;
         }
 
         public async void AddIfNotFound(string name, string email)
         {
+            _logger.LogDebug("ContactService is generating a token.");
+
             var contact = await _contactRepository.GetByEmailAsync(email);
 
             if (null == contact)
             {
+                _logger.LogDebug($"ContactService is adding {name}.");
+
                 contact = new Contact
                 {
                     Name = name,
-                    Email = email
+                    Email = email,
                 };
 
+                var token = _tokenService.Generate();
+
+                contact.Tokens.Add(token);
+
                 _contactRepository.Add(contact);
-                
-                await _contactRepository.CompleteAsync();
             }
+            else
+            {
+                _logger.LogDebug($"ContactService is updating {name}.");
+
+                contact.Name = name;
+            }
+
+            await _contactRepository.CompleteAsync();
         }
     }
 }

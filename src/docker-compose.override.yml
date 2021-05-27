@@ -1,11 +1,7 @@
 version: '3.4'
 
-# The default docker-compose.override file can use the "localhost" as the external name for testing web apps within the same dev machine.
-# The ESCAPEROOM_EXTERNAL_DNS_NAME_OR_IP environment variable is taken, by default, from the ".env" file defined like:
-#     ESCAPEROOM_EXTERNAL_DNS_NAME_OR_IP=localhost
-# but values present in the environment vars at runtime will always override those defined inside the .env file
-# An external IP or DNS name has to be used (instead localhost and the 10.0.75.1 IP) when testing the Web apps and the Xamarin apps from remote machines/devices using the same WiFi, for instance.
-
+# Add a .env file with your custom environment variables
+# BACKEND_API_KEY=TheMostSecureSecretOfAllT!me
 
 services:
 
@@ -14,7 +10,7 @@ services:
       - SA_PASSWORD=Pass@word
       - ACCEPT_EULA=Y
     ports:
-      - "1433:1433"
+      - "1433:1433" # Important: In a production environment your should remove the external port
     volumes:
       - backend-sqldata:/var/opt/mssql
 
@@ -22,9 +18,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://0.0.0.0:80
-      - ConnectionString=${BACKEND_AZURE_BACKEND_DB:-Server=sqldata;Database=EscapeRoom2021.Services.Backend;User Id=sa;Password=Pass@word}
+      - ConnectionString=${ESPACEROOM_BACKEND_AZURE_BACKEND_DB:-Server=sqldata;Database=EscapeRoom2021.Services.Backend;User Id=sa;Password=Pass@word}
+      - BackendApiKey=${BACKEND_API_KEY}
     ports:
-      - "8080:80"
+      - "13080:80" # Important: In a production environment your should remove the external port
     volumes:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
@@ -33,9 +30,19 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://0.0.0.0:80
-      - BackendUrl=http://${ESCAPEROOM_EXTERNAL_DNS_NAME_OR_IP}:8080
+      - BackendUrl=http://backend-api:80
+      - BackendApiKey=${BACKEND_API_KEY}
     ports:
-      - "8081:80"
+      - "13081:80" # Important: In a production environment your should remove the external port
+
+  frontend:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://0.0.0.0:80
+      - BackendUrl=http://backend-api:80
+      - BackendApiKey=${BACKEND_API_KEY}
+    ports:
+      - "13082:80" # Important: In a production environment your should remove the external port
 
 volumes:
   backend-sqldata:

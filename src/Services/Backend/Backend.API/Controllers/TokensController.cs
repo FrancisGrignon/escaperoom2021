@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+﻿using Backend.API.Infrastructure.Models;
+using Backend.API.Infrastructure.Repositories;
+using Backend.API.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Backend.API.Infrastructure;
-using Backend.API.Infrastructure.Models;
-using Backend.API.Infrastructure.Repositories;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Backend.API.Controllers
 {
@@ -16,10 +13,12 @@ namespace Backend.API.Controllers
     public class TokensController : ControllerBase
     {
         private readonly ITokenRepository _tokenRepository;
+        private readonly ITokenService _tokenService;
 
-        public TokensController(ITokenRepository tokenRepository)
+        public TokensController(ITokenRepository tokenRepository, ITokenService tokenService)
         {
             _tokenRepository = tokenRepository;
+            _tokenService = tokenService;
         }
 
         // GET: api/Tokens
@@ -41,6 +40,33 @@ namespace Backend.API.Controllers
             }
 
             return token;
+        }
+
+        // GET: api/Tokens/5/Use
+        [HttpGet("{id}/Use")]
+        public async Task<IActionResult> UseToken(string key)
+        {
+            StatusCodeResult output;
+
+            var result = await _tokenService.UseAsync(key);
+
+            switch (result)
+            {
+                case ITokenService.TOKEN_EXPIRED:
+                    output = NoContent();
+                    break;
+                case ITokenService.TOKEN_NOTFOUND:
+                    output = NotFound();
+                    break;
+                case ITokenService.TOKEN_VALID:
+                    output = Ok();
+                    break;
+                default:
+                    output = NotFound();
+                    break;
+            }
+
+            return output;
         }
 
         // PUT: api/Tokens/5
